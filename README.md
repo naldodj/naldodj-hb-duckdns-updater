@@ -2,6 +2,8 @@
 
 HB DuckDNS Client
 
+![DuckDNS](https://github.com/naldodj/naldodj-hb-duckdns-updater/blob/main/src/minigui/duckdns_logo.png?raw=true)
+
 HB DuckDns Updater is a Windows tray application that allows you to keep your dynamic hostname’s IP address up-to-date (and in sync) with DuckDns DNS service at www.DuckDns.org
 
 # Source Code
