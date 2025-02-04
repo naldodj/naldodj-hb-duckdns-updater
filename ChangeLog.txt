@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-04 18:15 UTC naldodj
+  ; Update Timer
+  * src/minigui/hb_minigui_duckdns_client.exe
+  * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-04 16:08 UTC naldodj
   ; Send messages to the windows notification area
     * src/minigui/hb_minigui_duckdns_client.exe

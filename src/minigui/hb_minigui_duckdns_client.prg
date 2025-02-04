@@ -177,6 +177,11 @@ static procedure SaveOptions()
         SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
     END INI
 
+    if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))
+        Form_Main.Timer_UpdateDuckDNS.Interval:=(val(cRefresh)*60000)
+        Form_Main.Timer_UpdateDuckDNS.Enabled:= .T.
+    endif
+
     Form_Main.NotifyTooltip:=(PROGRAM+" - "+VERSION+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")
     Form_Options.Release
 
