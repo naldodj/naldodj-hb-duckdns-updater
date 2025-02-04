@@ -47,8 +47,12 @@ procedure main()
 
         DEFINE NOTIFY MENU
             ITEM '&Update Now' ACTION UpdateDuckDNS()
+            SEPARATOR
             ITEM '&What is my IP Address' ACTION MsgInfo(getIP(),PROGRAM)
+            ITEM '&Copy my IP Address to Clipboard' ACTION (CopyToClipboard(""),CopyToClipboard(GetIP()))
+            SEPARATOR
             ITEM '&Options' ACTION ShowOptions()
+            SEPARATOR
             ITEM '&About...' ACTION ShellAbout("",PROGRAM+VERSION+CRLF+"Copyright "+Chr(169)+COPYRIGHT,LoadIconByName("MAIN",32,32))
             SEPARATOR
             ITEM 'E&xit' ACTION Form_Main.Release
