@@ -56,7 +56,7 @@ procedure main()
 
       DEFINE TIMER Timer_UpdateDuckDNS ;
          INTERVAL (val(cRefresh)*60000);
-         ACTION ( UpdateDuckDNS() )
+         ACTION ( UpdateDuckDNS() , Form_Main.NotifyTooltip:=(PROGRAM+" - "+VERSION+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.") )
 
     END WINDOW
 
@@ -193,7 +193,7 @@ static procedure UpdateDuckDNS()
         cResponse:=HttpGet("http://www.duckdns.org/update?domains="+cDomain+"&token="+cToken+"&ip="+cIP)
         if (cResponse=="OK")
             if (cUpdateMsg=="YES")
-                MsgInfo("DuckDNS updated successfully!",PROGRAM)
+                MsgBalloon("DuckDNS updated successfully!",PROGRAM)
             endif
         else
             MsgInfo("Error updating DuckDNS: "+cResponse,PROGRAM)
@@ -251,7 +251,88 @@ static function __NextUpdate()
 
     cNextUpdate:=DToC(dDate)
     cNextUpdate+=" "
-    cNextUpdate+=" "
     cNextUpdate+=cTime
 
 return(cNextUpdate) as character
+
+// Notify Icon Infotip flags
+#define NIIF_NONE       0x00000000
+// icon flags are mutualy exclusive
+// and take only the lowest 2 bits
+#define NIIF_INFO       0x00000001
+#define NIIF_WARNING    0x00000002
+#define NIIF_ERROR      0x00000003
+*--------------------------------------------------------*
+static procedure MsgBalloon(cMessage as character,cTitle as character,nIconIndex as numeric)
+*--------------------------------------------------------*
+
+    local i as numeric:=GetFormIndex("Form_Main")
+
+    hb_default(@cMessage,"Prompt")
+    hb_default(@cTitle,PROGRAM)
+    hb_default(@nIconIndex,NIIF_INFO)
+
+    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,NIL,NIL,NIL,NIL,0)
+    ShowNotifyInfo(_HMG_aFormhandles[i],.T.,LoadTrayIcon(GetInstance(),_HMG_aFormNotifyIconName[i]),_HMG_aFormNotifyIconToolTip[i],cMessage,cTitle,nIconIndex)
+
+
+    hb_idleSleep(3)
+    ActivateNotifyMenu(i)
+
+    return
+
+*--------------------------------------------------------*
+static procedure ActivateNotifyMenu(i as numeric)
+*--------------------------------------------------------*
+
+    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,NIL,NIL,NIL,NIL,0)
+    ShowNotifyIcon(_HMG_aFormhandles[i],.T.,LoadTrayIcon(GetInstance(),_HMG_aFormNotifyIconName[i]),_HMG_aFormNotifyIconToolTip[i])
+
+    return
+
+/*
+ * C-level
+*/
+#pragma BEGINDUMP
+
+    #define _WIN32_IE      0x0500
+    #define _WIN32_WINNT   0x0400
+
+    #include <windows.h>
+    #include "hbapi.h"
+
+    static void ShowNotifyInfo(HWND hWnd, BOOL bAdd, HICON hIcon, LPSTR szText, LPSTR szInfo, LPSTR szInfoTitle, DWORD nIconIndex);
+
+    HB_FUNC ( SHOWNOTIFYINFO )
+    {
+        ShowNotifyInfo( (HWND) hb_parnl(1), (BOOL) hb_parl(2), (HICON) hb_parnl(3), (LPSTR) hb_parc(4),
+                (LPSTR) hb_parc(5), (LPSTR) hb_parc(6), (DWORD) hb_parnl(7) );
+    }
+
+    static void ShowNotifyInfo(HWND hWnd, BOOL bAdd, HICON hIcon, LPSTR szText, LPSTR szInfo, LPSTR szInfoTitle, DWORD nIconIndex)
+    {
+        NOTIFYICONDATA nid;
+
+        ZeroMemory( &nid, sizeof(nid) );
+
+        nid.cbSize      = sizeof(NOTIFYICONDATA);
+        nid.hIcon       = hIcon;
+        nid.hWnd        = hWnd;
+        nid.uID         = 0;
+        nid.uFlags      = NIF_INFO | NIF_TIP | NIF_ICON;
+        nid.dwInfoFlags = nIconIndex;
+
+        lstrcpy( nid.szTip, TEXT(szText) );
+        lstrcpy( nid.szInfo, TEXT(szInfo) );
+        lstrcpy( nid.szInfoTitle, TEXT(szInfoTitle) );
+
+        if(bAdd)
+            Shell_NotifyIcon( NIM_ADD, &nid );
+        else
+            Shell_NotifyIcon( NIM_DELETE, &nid );
+
+        if(hIcon)
+            DestroyIcon( hIcon );
+    }
+
+#pragma ENDDUMP
