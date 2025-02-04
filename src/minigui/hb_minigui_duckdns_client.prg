@@ -79,51 +79,48 @@ static procedure ShowOptions()
     local nUpdateMsg as numeric:=Max(aScan(aUpdateMsg,cUpdateMsg),1)
 
     DEFINE WINDOW Form_Options;
-        AT 0,0;
+           AT 0,0;
         WIDTH 400;
-        HEIGHT 250;
+       HEIGHT 250;
         TITLE PROGRAM+' Options';
-        ICON 'MAIN';
-        NOMINIMIZE NOMAXIMIZE NOSIZE;
-        FONT 'MS Sans Serif';
-        SIZE 9
+         ICON 'MAIN';
+   NOMINIMIZE NOMAXIMIZE NOSIZE;
+         FONT 'MS Sans Serif';
+         SIZE 9
 
         @ 20,20 LABEL lblDomain;
                 VALUE 'Domain:';
                 WIDTH 80;
-                HEIGHT 20
+               HEIGHT 20
 
         @ 50,20 LABEL lblToken;
                 VALUE 'Token:';
                 WIDTH 80;
-                HEIGHT 20
+               HEIGHT 20
 
         @ 80,20 LABEL lblRefresh;
                 VALUE 'Refresh (min):';
                 WIDTH 80;
-                HEIGHT 20
+               HEIGHT 20
 
         @ 110,20    LABEL lblUpdateMsg;
                     VALUE 'Show Notifications:';
                     WIDTH 100;
-                    HEIGHT 20
+                   HEIGHT 20
 
         @ 20,120    TEXTBOX txtDomain;
-                    VALUE cDomain;
-                    WIDTH 250;
-                    HEIGHT 24
+                      VALUE cDomain;
+                      WIDTH 250;
+                     HEIGHT 24;
+               ON LOSTFOCUS (cDomain:=Form_Options.txtDomain.Value);
+                   ON ENTER (cDomain:=Form_Options.txtDomain.Value)
 
         @ 50,120    TEXTBOX txtToken;
-                    VALUE cToken;
-                    WIDTH 250;
-                    HEIGHT 24
-
-        /*@ 80,120    COMBOBOX cmbTxtRefresh;
-                    ITEMS aRefresh;
-                    VALUE nRefresh;
-                    WIDTH 50;
-                    HEIGHT 24;
-                 ON CHANGE cRefresh := aRefresh[Form_Options.cmbUpdateMsg.Value]*/
+                      VALUE cToken;
+                      WIDTH 250;
+                     HEIGHT 24;
+               ON LOSTFOCUS (cToken:=Form_Options.txtToken.Value);
+                   ON ENTER (cToken:=Form_Options.txtToken.Value)
 
         @ 80,120   LISTBOX cmbTxtRefresh;
                         OF Form_Options;
@@ -134,13 +131,6 @@ static procedure ShowOptions()
                       FONT GetDefaultFontName();
                       SIZE 10;
                  ON CHANGE (cRefresh:=aRefresh[Form_Options.cmbTxtRefresh.Value])
-
-        /*@ 110,120 COMBOBOX cmbUpdateMsg;
-             ITEMS aUpdateMsg;
-             VALUE nUpdateMsg;
-             WIDTH 50;
-            HEIGHT 24;
-                ON CHANGE cUpdateMsg := aUpdateMsg[Form_Options.cmbUpdateMsg.Value]*/
 
         @ 110,120   LISTBOX cmbUpdateMsg;
                          OF Form_Options;

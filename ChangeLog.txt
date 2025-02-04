@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-04 19:54 UTC naldodj
+  ! Fix Update Domain/Token
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-04 18:49 UTC naldodj
   ; Copy IP Address to Clipboard
   * src/minigui/hb_minigui_duckdns_client.exe
