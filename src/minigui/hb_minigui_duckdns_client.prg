@@ -42,7 +42,7 @@ procedure main()
         TITLE PROGRAM;
         MAIN NOSHOW;
         NOTIFYICON 'MAIN';
-        NOTIFYTOOLTIP (PROGRAM+" - "+VERSION+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.");
+        NOTIFYTOOLTIP __NotifyTooltip();
         ON NOTIFYCLICK ShowOptions()
 
         DEFINE NOTIFY MENU
@@ -60,7 +60,7 @@ procedure main()
 
       DEFINE TIMER Timer_UpdateDuckDNS ;
          INTERVAL (val(cRefresh)*60000);
-         ACTION ( UpdateDuckDNS() , Form_Main.NotifyTooltip:=(PROGRAM+" - "+VERSION+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.") )
+         ACTION ( UpdateDuckDNS() , Form_Main.NotifyTooltip:=__NotifyTooltip() )
 
     END WINDOW
 
@@ -171,12 +171,14 @@ static procedure SaveOptions()
         SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
     END INI
 
+    UpdateDuckDNS()
+
     if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))
         Form_Main.Timer_UpdateDuckDNS.Interval:=(val(cRefresh)*60000)
         Form_Main.Timer_UpdateDuckDNS.Enabled:= .T.
     endif
 
-    Form_Main.NotifyTooltip:=(PROGRAM+" - "+VERSION+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")
+    Form_Main.NotifyTooltip:=__NotifyTooltip()
     Form_Options.Release
 
     return
@@ -253,6 +255,9 @@ static function __NextUpdate()
     cNextUpdate+=cTime
 
 return(cNextUpdate) as character
+
+static function __NotifyTooltip()
+return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()/*+hb_osNewLine()*/+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
 
 // Notify Icon Infotip flags
 #define NIIF_NONE       0x00000000
