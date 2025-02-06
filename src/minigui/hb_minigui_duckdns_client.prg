@@ -48,7 +48,7 @@ procedure main()
         DEFINE NOTIFY MENU
             ITEM '&Update Now' ACTION UpdateDuckDNS()
             SEPARATOR
-            ITEM '&What is my IP Address' ACTION MsgInfo(getIP(),PROGRAM)
+            ITEM '&What is my IP Address' ACTION MsgInfo(GetIP(),PROGRAM)
             ITEM '&Copy my IP Address to Clipboard' ACTION (CopyToClipboard(""),CopyToClipboard(GetIP()))
             SEPARATOR
             ITEM '&Options' ACTION ShowOptions()
@@ -213,7 +213,7 @@ static function GetIP()
     local cResponse as character:=HttpGet("http://checkip.amazonaws.com")
 
     if (!Empty(cResponse))
-        cIP:=AllTrim(cResponse)
+        cIP:=strTran(strTran(AllTrim(cResponse),chr(10),""),chr(13),"")
     endif
 
     return(cIP) as character
@@ -257,7 +257,7 @@ static function __NextUpdate()
 return(cNextUpdate) as character
 
 static function __NotifyTooltip()
-return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()/*+hb_osNewLine()*/+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
+return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
 
 // Notify Icon Infotip flags
 #define NIIF_NONE       0x00000000
