@@ -87,98 +87,112 @@ procedure main(cStartUp as character)
 
 static procedure ShowOptions()
 
-    local aRefresh as array:={"5","10","15","30","60"}
-    local aUpdateMsg as array:={"YES","NO"}
+    local aRefresh as array
+    local aUpdateMsg as array
 
-    local nRefresh as numeric:=Max(aScan(aRefresh,cRefresh),1)
-    local nUpdateMsg as numeric:=Max(aScan(aUpdateMsg,cUpdateMsg),1)
+    local nRefresh as numeric
+    local nUpdateMsg as numeric
 
-    DEFINE WINDOW Form_Options;
-           AT 0,0;
-        WIDTH 500;
-       HEIGHT 250;
-        TITLE PROGRAM+' Options';
-         ICON 'MAIN';
-   NOMINIMIZE NOMAXIMIZE NOSIZE;
-         FONT 'MS Sans Serif';
-         SIZE 9
+    begin sequence
 
-        @ 20,20 LABEL lblDomain;
-                VALUE 'Domain:';
-                WIDTH 80;
-               HEIGHT 20
+        if (!Empty(GetFormIndex("Form_Options")))
+            break
+        endif
 
-        @ 50,20 LABEL lblToken;
-                VALUE 'Token:';
-                WIDTH 80;
-               HEIGHT 20
+        aRefresh:={"5","10","15","30","60"}
+        aUpdateMsg:={"YES","NO"}
 
-        @ 80,20 LABEL lblRefresh;
-                VALUE 'Refresh (min):';
-                WIDTH 80;
-               HEIGHT 20
+        nRefresh:=Max(aScan(aRefresh,cRefresh),1)
+        nUpdateMsg:=Max(aScan(aUpdateMsg,cUpdateMsg),1)
 
-        @ 110,20    LABEL lblUpdateMsg;
-                    VALUE 'Show Notifications:';
-                    WIDTH 100;
+        DEFINE WINDOW Form_Options;
+               AT 0,0;
+            WIDTH 500;
+           HEIGHT 250;
+            TITLE PROGRAM+' Options';
+             ICON 'MAIN';
+       NOMINIMIZE NOMAXIMIZE NOSIZE;
+             FONT 'MS Sans Serif';
+             SIZE 9
+
+            @ 20,20 LABEL lblDomain;
+                    VALUE 'Domain:';
+                    WIDTH 80;
                    HEIGHT 20
 
-        @ 20,120    TEXTBOX txtDomain;
-                      VALUE cDomain;
-                      WIDTH 250;
-                     HEIGHT 24;
-               ON LOSTFOCUS (cDomain:=Form_Options.txtDomain.Value);
-                   ON ENTER (cDomain:=Form_Options.txtDomain.Value)
+            @ 50,20 LABEL lblToken;
+                    VALUE 'Token:';
+                    WIDTH 80;
+                   HEIGHT 20
 
-        @ 50,120    TEXTBOX txtToken;
-                      VALUE cToken;
-                      WIDTH 250;
-                     HEIGHT 24;
-               ON LOSTFOCUS (cToken:=Form_Options.txtToken.Value);
-                   ON ENTER (cToken:=Form_Options.txtToken.Value)
+            @ 80,20 LABEL lblRefresh;
+                    VALUE 'Refresh (min):';
+                    WIDTH 80;
+                   HEIGHT 20
 
-        @ 80,120   LISTBOX cmbTxtRefresh;
-                        OF Form_Options;
-                     WIDTH 50;
-                    HEIGHT 24;
-                     ITEMS aRefresh;
-                     VALUE nRefresh;
-                      FONT GetDefaultFontName();
-                      SIZE 10;
-                 ON CHANGE (cRefresh:=aRefresh[Form_Options.cmbTxtRefresh.Value])
+            @ 110,20    LABEL lblUpdateMsg;
+                        VALUE 'Show Notifications:';
+                        WIDTH 100;
+                       HEIGHT 20
 
-        @ 110,120   LISTBOX cmbUpdateMsg;
-                         OF Form_Options;
-                      WIDTH 50;
-                     HEIGHT 24;
-                      ITEMS aUpdateMsg;
-                      VALUE nUpdateMsg;
-                       FONT GetDefaultFontName();
-                       SIZE 10;
-                  ON CHANGE (cUpdateMsg:=aUpdateMsg[Form_Options.cmbUpdateMsg.Value])
+            @ 20,120    TEXTBOX txtDomain;
+                          VALUE cDomain;
+                          WIDTH 250;
+                         HEIGHT 24;
+                   ON LOSTFOCUS (cDomain:=Form_Options.txtDomain.Value);
+                       ON ENTER (cDomain:=Form_Options.txtDomain.Value)
 
-        @ 135,120 CHECKBOX chkbWinRun;
-                   CAPTION '&Start ' + PROGRAM + ' automatically at Windows Startup' ;
-                     WIDTH 312;
-                    HEIGHT 16;
-                     VALUE lWinRun;
-                 ON CHANGE (lWinRun:=!lWinRun,cWinRun:=if(lWinRun,"YES","NO"),WinRun(lWinRun))
+            @ 50,120    TEXTBOX txtToken;
+                          VALUE cToken;
+                          WIDTH 250;
+                         HEIGHT 24;
+                   ON LOSTFOCUS (cToken:=Form_Options.txtToken.Value);
+                       ON ENTER (cToken:=Form_Options.txtToken.Value)
 
-        @ 150,120   BUTTON btnSave;
-                   CAPTION '&Save';
-                    ACTION SaveOptions();
-                     WIDTH 80;
-                    HEIGHT 24
+            @ 80,120   LISTBOX cmbTxtRefresh;
+                            OF Form_Options;
+                         WIDTH 50;
+                        HEIGHT 24;
+                         ITEMS aRefresh;
+                         VALUE nRefresh;
+                          FONT GetDefaultFontName();
+                          SIZE 10;
+                     ON CHANGE (cRefresh:=aRefresh[Form_Options.cmbTxtRefresh.Value])
 
-        @ 150,210   BUTTON btnCancel;
-                   CAPTION '&Cancel';
-                    ACTION Form_Options.Release;
-                     WIDTH 80;
-                    HEIGHT 24
-    END WINDOW
+            @ 110,120   LISTBOX cmbUpdateMsg;
+                             OF Form_Options;
+                          WIDTH 50;
+                         HEIGHT 24;
+                          ITEMS aUpdateMsg;
+                          VALUE nUpdateMsg;
+                           FONT GetDefaultFontName();
+                           SIZE 10;
+                      ON CHANGE (cUpdateMsg:=aUpdateMsg[Form_Options.cmbUpdateMsg.Value])
 
-    CENTER WINDOW Form_Options
-    ACTIVATE WINDOW Form_Options
+            @ 135,120 CHECKBOX chkbWinRun;
+                       CAPTION '&Start ' + PROGRAM + ' automatically at Windows Startup' ;
+                         WIDTH 312;
+                        HEIGHT 16;
+                         VALUE lWinRun;
+                     ON CHANGE (lWinRun:=!lWinRun,cWinRun:=if(lWinRun,"YES","NO"),WinRun(lWinRun))
+
+            @ 150,120   BUTTON btnSave;
+                       CAPTION '&Save';
+                        ACTION SaveOptions();
+                         WIDTH 80;
+                        HEIGHT 24
+
+            @ 150,210   BUTTON btnCancel;
+                       CAPTION '&Cancel';
+                        ACTION Form_Options.Release;
+                         WIDTH 80;
+                        HEIGHT 24
+        END WINDOW
+
+        CENTER WINDOW Form_Options
+        ACTIVATE WINDOW Form_Options
+
+    end sequence
 
     return
 
