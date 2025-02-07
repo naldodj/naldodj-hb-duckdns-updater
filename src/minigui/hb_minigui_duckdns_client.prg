@@ -1,20 +1,27 @@
+#pragma -w3
+
 #include "minigui.ch"
 
 #define PROGRAM "DuckDNS Updater"
 #define VERSION "version 1.0"
 #define COPYRIGHT "2025 Marinaldo de Jesus"
 
-static aPublicVars as array:={"hb_minigui_duckdns_client.ini","example.duckdns.org","your-token-here","5","YES"}
+#define REG_VAR "Software\Microsoft\Windows\CurrentVersion\Run"
 
-#pragma -w3
+static lWinRun as logical:=.F.
+static aPublicVars as array:={"hb_minigui_duckdns_client.ini","example.duckdns.org","your-token-here","5","YES","NO"}
+#xtranslate cCfgFile => aPublicVars\[1\]
+#xtranslate cDomain=> aPublicVars\[2\]
+#xtranslate cToken => aPublicVars\[3\]
+#xtranslate cRefresh => aPublicVars\[4\]
+#xtranslate cUpdateMsg => aPublicVars\[5\]
+#xtranslate cWinRun=> aPublicVars\[6\]
 
-#xtranslate cCfgFile     => aPublicVars\[1\]
-#xtranslate cDomain      => aPublicVars\[2\]
-#xtranslate cToken       => aPublicVars\[3\]
-#xtranslate cRefresh     => aPublicVars\[4\]
-#xtranslate cUpdateMsg   => aPublicVars\[5\]
+procedure main(cStartUp as character)
 
-procedure main()
+    local cGetRegVar as character
+
+    local lStartUP as logical
 
     SET CENTURY ON
     SET DATE BRITISH
@@ -26,6 +33,7 @@ procedure main()
             SET SECTION "Options" ENTRY "Token" TO cToken
             SET SECTION "Options" ENTRY "Refresh" TO cRefresh
             SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
+            SET SECTION "Options" ENTRY "WinRun" TO cWinRun
         END INI
     else
         BEGIN INI FILE cCfgFile
@@ -33,8 +41,17 @@ procedure main()
             GET cToken SECTION "Options" ENTRY "Token"
             GET cRefresh SECTION "Options" ENTRY "Refresh"
             GET cUpdateMsg SECTION "Options" ENTRY "UpdateMsg"
+            GET cWinRun SECTION "Options" ENTRY "WinRun"
         END INI
     endif
+
+    lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
+    if (!lStartUP)
+        cGetRegVar:=getRegVar(nil,REG_VAR,PROGRAM)
+        lStartUP:=(!Empty(cGetRegVar))
+    endif
+
+    lWinRun:=((cWinRun=="YES").and.(lStartUP))
 
     DEFINE WINDOW Form_Main;
         AT 0,0;
@@ -58,9 +75,9 @@ procedure main()
             ITEM 'E&xit' ACTION Form_Main.Release
         END MENU
 
-      DEFINE TIMER Timer_UpdateDuckDNS ;
-         INTERVAL (val(cRefresh)*60000);
-         ACTION ( UpdateDuckDNS() , Form_Main.NotifyTooltip:=__NotifyTooltip() )
+    DEFINE TIMER Timer_UpdateDuckDNS ;
+        INTERVAL (val(cRefresh)*60000);
+          ACTION (UpdateDuckDNS(),Form_Main.NotifyTooltip:=__NotifyTooltip())
 
     END WINDOW
 
@@ -68,9 +85,7 @@ procedure main()
 
     return
 
-*--------------------------------------------------------*
 static procedure ShowOptions()
-*--------------------------------------------------------*
 
     local aRefresh as array:={"5","10","15","30","60"}
     local aUpdateMsg as array:={"YES","NO"}
@@ -80,7 +95,7 @@ static procedure ShowOptions()
 
     DEFINE WINDOW Form_Options;
            AT 0,0;
-        WIDTH 400;
+        WIDTH 500;
        HEIGHT 250;
         TITLE PROGRAM+' Options';
          ICON 'MAIN';
@@ -142,6 +157,13 @@ static procedure ShowOptions()
                        SIZE 10;
                   ON CHANGE (cUpdateMsg:=aUpdateMsg[Form_Options.cmbUpdateMsg.Value])
 
+        @ 135,120 CHECKBOX chkbWinRun;
+                   CAPTION '&Start ' + PROGRAM + ' automatically at Windows Startup' ;
+                     WIDTH 312;
+                    HEIGHT 16;
+                     VALUE lWinRun;
+                 ON CHANGE (lWinRun:=!lWinRun,cWinRun:=if(lWinRun,"YES","NO"),WinRun(lWinRun))
+
         @ 150,120   BUTTON btnSave;
                    CAPTION '&Save';
                     ACTION SaveOptions();
@@ -160,22 +182,23 @@ static procedure ShowOptions()
 
     return
 
-*--------------------------------------------------------*
 static procedure SaveOptions()
-*--------------------------------------------------------*
+
+    cWinRun:=if(lWinRun,"YES","NO")
 
     BEGIN INI FILE cCfgFile
         SET SECTION "Options" ENTRY "Domain" TO cDomain
         SET SECTION "Options" ENTRY "Token" TO cToken
         SET SECTION "Options" ENTRY "Refresh" TO cRefresh
         SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
+        SET SECTION "Options" ENTRY "WinRun" TO cWinRun
     END INI
 
     UpdateDuckDNS()
 
     if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))
         Form_Main.Timer_UpdateDuckDNS.Interval:=(val(cRefresh)*60000)
-        Form_Main.Timer_UpdateDuckDNS.Enabled:= .T.
+        Form_Main.Timer_UpdateDuckDNS.Enabled:=.T.
     endif
 
     Form_Main.NotifyTooltip:=__NotifyTooltip()
@@ -183,9 +206,7 @@ static procedure SaveOptions()
 
     return
 
-*--------------------------------------------------------*
 static procedure UpdateDuckDNS()
-*--------------------------------------------------------*
 
     local cIP as character:=GetIP()
     local cResponse as character:=""
@@ -205,9 +226,7 @@ static procedure UpdateDuckDNS()
 
     return
 
-*--------------------------------------------------------*
 static function GetIP()
-*--------------------------------------------------------*
 
     local cIP as character:=""
     local cResponse as character:=HttpGet("http://checkip.amazonaws.com")
@@ -218,11 +237,9 @@ static function GetIP()
 
     return(cIP) as character
 
-*--------------------------------------------------------*
 static function HttpGet(cUrl as character)
-*--------------------------------------------------------*
 
-    local cResponse as character := ""
+    local cResponse as character :=""
 
     local oHttp as object:=TIpClientHttp():New(cUrl)
 
@@ -233,9 +250,7 @@ static function HttpGet(cUrl as character)
 
     return(cResponse) as character
 
-*--------------------------------------------------------*
 static function __NextUpdate()
-*--------------------------------------------------------*
 
     local cTime as character
     local cNextUpdate as character
@@ -256,6 +271,65 @@ static function __NextUpdate()
 
 return(cNextUpdate) as character
 
+static procedure WinRun(lMode as logical)
+
+    local cRunName as character:=Upper(GetModuleFileName(GetInstance()))+" /STARTUP"
+    local cRunKey as character:=REG_VAR
+    local cRegKey as character:=getRegVar(nil,cRunKey,PROGRAM)
+
+    if (IsWinNT())
+        EnablePermissions()
+    endif
+
+    if (lMode)
+        if (Empty(cRegKey).or.(cRegKey# cRunName))
+            setRegVar(nil,cRunKey,PROGRAM,cRunName)
+        endif
+    else
+        DelRegVar(nil,cRunKey,PROGRAM)
+    endif
+
+    return
+
+static function getRegVar(nKey as numeric,cRegKey as character,cSubKey as character,uValue as usual/*as variant*/)
+
+    local cValue as character
+    local oTReg32 as object
+
+    nKey:=if(nKey==nil,HKEY_CURRENT_USER,nKey)
+    uValue:=if(uValue==nil,"",uValue)
+    oTReg32:=TReg32():Create(nKey,cRegKey)
+    cValue:=oTReg32:Get(cSubKey,uValue)
+    oTReg32:Close()
+
+    return(cValue) as character
+
+static function setRegVar(nKey as numeric,cRegKey as character,cSubKey as character,uValue as usual/*as variant*/)
+
+    local cValue as character
+    local oTReg32 as object
+
+    nKey:=if(nKey==nil,HKEY_CURRENT_USER,nKey)
+    uValue:=if(uValue==nil,"",uValue)
+    oTReg32:=TReg32():Create(nKey,cRegKey)
+    cValue:=oTReg32:Set(cSubKey,uValue)
+    oTReg32:Close()
+
+    return(cValue) as character
+
+static function DelRegVar(nKey as numeric,cRegKey as character,cSubKey as character)
+
+    local cValue as character
+    local nValue as numeric
+    local oTReg32 as object
+
+    nKey:=if(nKey==nil,HKEY_CURRENT_USER,nKey)
+    oTReg32:=TReg32():New(nKey,cRegKey)
+    nValue:=oTReg32:Delete(cSubKey)
+    oTReg32:Close()
+
+    return(nValue) as numeric
+
 static function __NotifyTooltip()
 return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
 
@@ -266,9 +340,8 @@ return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()+hb_osNewLine()+"Next
 #define NIIF_INFO       0x00000001
 #define NIIF_WARNING    0x00000002
 #define NIIF_ERROR      0x00000003
-*--------------------------------------------------------*
+
 static procedure MsgBalloon(cMessage as character,cTitle as character,nIconIndex as numeric)
-*--------------------------------------------------------*
 
     local i as numeric:=GetFormIndex("Form_Main")
 
@@ -276,7 +349,7 @@ static procedure MsgBalloon(cMessage as character,cTitle as character,nIconIndex
     hb_default(@cTitle,PROGRAM)
     hb_default(@nIconIndex,NIIF_INFO)
 
-    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,NIL,NIL,NIL,NIL,0)
+    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,nil,nil,nil,nil,0)
     ShowNotifyInfo(_HMG_aFormhandles[i],.T.,LoadTrayIcon(GetInstance(),_HMG_aFormNotifyIconName[i]),_HMG_aFormNotifyIconToolTip[i],cMessage,cTitle,nIconIndex)
 
 
@@ -285,11 +358,9 @@ static procedure MsgBalloon(cMessage as character,cTitle as character,nIconIndex
 
     return
 
-*--------------------------------------------------------*
 static procedure ActivateNotifyMenu(i as numeric)
-*--------------------------------------------------------*
 
-    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,NIL,NIL,NIL,NIL,0)
+    ShowNotifyInfo(_HMG_aFormhandles[i],.F.,nil,nil,nil,nil,0)
     ShowNotifyIcon(_HMG_aFormhandles[i],.T.,LoadTrayIcon(GetInstance(),_HMG_aFormNotifyIconName[i]),_HMG_aFormNotifyIconToolTip[i])
 
     return
@@ -307,7 +378,7 @@ static procedure ActivateNotifyMenu(i as numeric)
 
     static void ShowNotifyInfo(HWND hWnd, BOOL bAdd, HICON hIcon, LPSTR szText, LPSTR szInfo, LPSTR szInfoTitle, DWORD nIconIndex);
 
-    HB_FUNC ( SHOWNOTIFYINFO )
+    HB_FUNC_STATIC( SHOWNOTIFYINFO )
     {
         ShowNotifyInfo( (HWND) hb_parnl(1), (BOOL) hb_parl(2), (HICON) hb_parnl(3), (LPSTR) hb_parc(4),
                 (LPSTR) hb_parc(5), (LPSTR) hb_parc(6), (DWORD) hb_parnl(7) );
@@ -319,12 +390,12 @@ static procedure ActivateNotifyMenu(i as numeric)
 
         ZeroMemory( &nid, sizeof(nid) );
 
-        nid.cbSize      = sizeof(NOTIFYICONDATA);
-        nid.hIcon       = hIcon;
-        nid.hWnd        = hWnd;
-        nid.uID         = 0;
-        nid.uFlags      = NIF_INFO | NIF_TIP | NIF_ICON;
-        nid.dwInfoFlags = nIconIndex;
+        nid.cbSize=sizeof(NOTIFYICONDATA);
+        nid.hIcon =hIcon;
+        nid.hWnd=hWnd;
+        nid.uID =0;
+        nid.uFlags=NIF_INFO | NIF_TIP | NIF_ICON;
+        nid.dwInfoFlags =nIconIndex;
 
         lstrcpy( nid.szTip, TEXT(szText) );
         lstrcpy( nid.szInfo, TEXT(szInfo) );
@@ -337,6 +408,25 @@ static procedure ActivateNotifyMenu(i as numeric)
 
         if(hIcon)
             DestroyIcon( hIcon );
+    }
+
+    HB_FUNC_STATIC( ENABLEPERMISSIONS )
+    {
+       LUID tmpLuid;
+       TOKEN_PRIVILEGES tkp, tkpNewButIgnored;
+       DWORD lBufferNeeded;
+       HANDLE hdlTokenHandle;
+       HANDLE hdlProcessHandle =GetCurrentProcess();
+
+       OpenProcessToken(hdlProcessHandle, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hdlTokenHandle);
+
+       LookupPrivilegeValue(NULL, "SeShutdownPrivilege", &tmpLuid);
+
+       tkp.PrivilegeCount=1;
+       tkp.Privileges[0].Luid=tmpLuid;
+       tkp.Privileges[0].Attributes=SE_PRIVILEGE_ENABLED;
+
+       AdjustTokenPrivileges(hdlTokenHandle, FALSE, &tkp, sizeof(tkpNewButIgnored), &tkpNewButIgnored, &lBufferNeeded);
     }
 
 #pragma ENDDUMP

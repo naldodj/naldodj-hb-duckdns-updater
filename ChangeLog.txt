@@ -3,6 +3,12 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-07 11:29 UTC naldodj
+  ; Enable Windows Startup
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+    * src/minigui/hb_minigui_duckdns_client.rc
+
 2025-02-05 22:52 UTC naldodj
   * bin/harbour/hbrun.exe
   * src/minigui/hb_minigui_duckdns_client.exe

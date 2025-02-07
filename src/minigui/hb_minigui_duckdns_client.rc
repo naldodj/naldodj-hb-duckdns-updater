@@ -10,15 +10,15 @@ BLOCK "StringFileInfo"
 {
     BLOCK "040904b0"
     {
-        VALUE "FileDescription", "Opening the most frequently used file\000"
-        VALUE "FileVersion", "1.0.0.0"
+        VALUE "FileDescription", "DuckDNS Updater\000"
+        VALUE "FileVersion", "1.0.0.0\000"
         VALUE "InternalName", "hb_minigui_duckdns_client\000"
-        VALUE "LegalCopyright", "Freeware 2003-2006\000"
-        VALUE "LegalTrademarks", "Harbour"
-        VALUE "OriginalFilename", "hb_minigui_duckdns_client.exe"
-        VALUE "CompanyName", ""
-        VALUE "ProductName", "MiniGUI Utility"
-        VALUE "ProductVersion", "1.0.0.0"
+        VALUE "LegalCopyright", "Free 2025-2025\000"
+        VALUE "LegalTrademarks", "Harbour\000"
+        VALUE "OriginalFilename", "hb_minigui_duckdns_client.exe\000"
+        VALUE "CompanyName", "DNA Tech\000"
+        VALUE "ProductName", "DNA Tech DuckDNS Updater\000"
+        VALUE "ProductVersion", "1.0.0.0\000"
         VALUE "Comments", "Created by Marinaldo de Jesus <marinaldo.jesus@gmail.com>\000"
     }
 }
