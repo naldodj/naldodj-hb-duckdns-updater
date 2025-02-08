@@ -3,6 +3,10 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-08 00:33 UTC naldodj
+  * src/minigui/hb_minigui_duckdns_client.exe
+  * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-07 11:44 UTC naldodj
   ! Form_Options is already defined
     * src/minigui/hb_minigui_duckdns_client.exe

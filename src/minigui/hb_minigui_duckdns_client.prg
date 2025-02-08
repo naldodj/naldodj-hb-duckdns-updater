@@ -223,16 +223,22 @@ static procedure SaveOptions()
 static procedure UpdateDuckDNS()
 
     local cIP as character:=GetIP()
+    local cMsg as character
+    local cError as character
     local cResponse as character:=""
 
     if (!Empty(cIP))
-        cResponse:=HttpGet("http://www.duckdns.org/update?domains="+cDomain+"&token="+cToken+"&ip="+cIP)
+        cResponse:=HTTPGet("http://www.duckdns.org/update?domains="+cDomain+"&token="+cToken+"&ip="+cIP,@cError)
         if (cResponse=="OK")
             if (cUpdateMsg=="YES")
-                MsgBalloon("DuckDNS updated successfully!",PROGRAM)
+                MsgBalloon("DuckDNS updated successfully!"+hb_osNewLine()+"IP: "+cIP,PROGRAM)
             endif
         else
-            MsgInfo("Error updating DuckDNS: "+cResponse,PROGRAM)
+            cMsg:="Error updating DuckDNS: "+cResponse
+            if (!Empty(cError))
+                cMsg+=" Error: "+cError
+            endif
+            MsgInfo(cMsg,PROGRAM)
         endif
     else
         MsgInfo("Could not retrieve IP address!",PROGRAM)
@@ -242,24 +248,66 @@ static procedure UpdateDuckDNS()
 
 static function GetIP()
 
+    local aURLS as array:=Array(0)
+
     local cIP as character:=""
-    local cResponse as character:=HttpGet("http://checkip.amazonaws.com")
+    local cURL as character
+    local cKEY as character
+    local cError as character
+    local cResponse as character
+
+    local hResponse /*as hash*/
+
+    local nURL as numeric
+
+    aAdd(aURLS,{"https://4.ident.me/",.F.})
+    aAdd(aURLS,{"https://ipinfo.io/ip",.F.})
+    aAdd(aURLS,{"https://api.ipify.org/",.F.})
+    aAdd(aURLS,{"https://4.icanhazip.com/",.F.})
+    aAdd(aURLS,{"https://checkip.amazonaws.com/",.F.})
+    aAdd(aURLS,{"https://ipv4.wtfismyip.com/text",.F.})
+
+    aAdd(aURLS,{"https://ipwhois.app/json/",.T.,"ip"})
+    aAdd(aURLS,{"https://ipv4.iplocation.net/",.T.,"ip"})
+
+    nURL:=hb_RandomInt(1,Len(aURLS))
+    cURL:=strTran(aURLS[nURL][1],"https","http")
+
+    cResponse:=HTTPGet(cURL,@cError)
 
     if (!Empty(cResponse))
-        cIP:=strTran(strTran(AllTrim(cResponse),chr(10),""),chr(13),"")
+        if (aURLS[nURL][2])
+            hb_JSONDecode(cResponse,@hResponse)
+            cKEY:=aURLS[nURL][3]
+            if (HHasKey(hResponse,cKEY))
+                cIP:=hResponse[cKEY]
+            endif
+        else
+            cIP:=strTran(strTran(AllTrim(cResponse),chr(10),""),chr(13),"")
+        endif
     endif
 
     return(cIP) as character
 
-static function HttpGet(cUrl as character)
+static function HTTPGet(cURL as character,/*@*/cError as character)
 
-    local cResponse as character :=""
+    local cResponse as character:=""
 
-    local oHttp as object:=TIpClientHttp():New(cUrl)
+    local oURL as object
+    local oHttp as object
 
-    if (oHttp:Open())
-        cResponse:=oHttp:Read()
-        oHttp:Close()
+
+    oURL:=TUrl():New(cURL)
+    oHTTP:=TIpClientHttp():New(oURL)
+
+    if (oHTTP:Open())
+        cResponse:=oHTTP:ReadAll()
+        if (Empty(cResponse))
+            cError:=oHTTP:LastErrorMessage(oHTTP:SocketCon)
+        endif
+        oHTTP:Close()
+    else
+        cError:=oHTTP:LastErrorMessage(oHTTP:SocketCon)
     endif
 
     return(cResponse) as character
@@ -366,7 +414,6 @@ static procedure MsgBalloon(cMessage as character,cTitle as character,nIconIndex
     ShowNotifyInfo(_HMG_aFormhandles[i],.F.,nil,nil,nil,nil,0)
     ShowNotifyInfo(_HMG_aFormhandles[i],.T.,LoadTrayIcon(GetInstance(),_HMG_aFormNotifyIconName[i]),_HMG_aFormNotifyIconToolTip[i],cMessage,cTitle,nIconIndex)
 
-
     hb_idleSleep(3)
     ActivateNotifyMenu(i)
 
@@ -390,19 +437,19 @@ static procedure ActivateNotifyMenu(i as numeric)
     #include <windows.h>
     #include "hbapi.h"
 
-    static void ShowNotifyInfo(HWND hWnd, BOOL bAdd, HICON hIcon, LPSTR szText, LPSTR szInfo, LPSTR szInfoTitle, DWORD nIconIndex);
+    static void ShowNotifyInfo(HWND hWnd,BOOL bAdd,HICON hIcon,LPSTR szText,LPSTR szInfo,LPSTR szInfoTitle,DWORD nIconIndex);
 
     HB_FUNC_STATIC( SHOWNOTIFYINFO )
     {
-        ShowNotifyInfo( (HWND) hb_parnl(1), (BOOL) hb_parl(2), (HICON) hb_parnl(3), (LPSTR) hb_parc(4),
-                (LPSTR) hb_parc(5), (LPSTR) hb_parc(6), (DWORD) hb_parnl(7) );
+        ShowNotifyInfo( (HWND) hb_parnl(1),(BOOL) hb_parl(2),(HICON) hb_parnl(3),(LPSTR) hb_parc(4),
+                (LPSTR) hb_parc(5),(LPSTR) hb_parc(6),(DWORD) hb_parnl(7) );
     }
 
-    static void ShowNotifyInfo(HWND hWnd, BOOL bAdd, HICON hIcon, LPSTR szText, LPSTR szInfo, LPSTR szInfoTitle, DWORD nIconIndex)
+    static void ShowNotifyInfo(HWND hWnd,BOOL bAdd,HICON hIcon,LPSTR szText,LPSTR szInfo,LPSTR szInfoTitle,DWORD nIconIndex)
     {
         NOTIFYICONDATA nid;
 
-        ZeroMemory( &nid, sizeof(nid) );
+        ZeroMemory( &nid,sizeof(nid) );
 
         nid.cbSize=sizeof(NOTIFYICONDATA);
         nid.hIcon =hIcon;
@@ -411,14 +458,14 @@ static procedure ActivateNotifyMenu(i as numeric)
         nid.uFlags=NIF_INFO | NIF_TIP | NIF_ICON;
         nid.dwInfoFlags =nIconIndex;
 
-        lstrcpy( nid.szTip, TEXT(szText) );
-        lstrcpy( nid.szInfo, TEXT(szInfo) );
-        lstrcpy( nid.szInfoTitle, TEXT(szInfoTitle) );
+        lstrcpy( nid.szTip,TEXT(szText) );
+        lstrcpy( nid.szInfo,TEXT(szInfo) );
+        lstrcpy( nid.szInfoTitle,TEXT(szInfoTitle) );
 
         if(bAdd)
-            Shell_NotifyIcon( NIM_ADD, &nid );
+            Shell_NotifyIcon( NIM_ADD,&nid );
         else
-            Shell_NotifyIcon( NIM_DELETE, &nid );
+            Shell_NotifyIcon( NIM_DELETE,&nid );
 
         if(hIcon)
             DestroyIcon( hIcon );
@@ -427,20 +474,20 @@ static procedure ActivateNotifyMenu(i as numeric)
     HB_FUNC_STATIC( ENABLEPERMISSIONS )
     {
        LUID tmpLuid;
-       TOKEN_PRIVILEGES tkp, tkpNewButIgnored;
+       TOKEN_PRIVILEGES tkp,tkpNewButIgnored;
        DWORD lBufferNeeded;
        HANDLE hdlTokenHandle;
        HANDLE hdlProcessHandle =GetCurrentProcess();
 
-       OpenProcessToken(hdlProcessHandle, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hdlTokenHandle);
+       OpenProcessToken(hdlProcessHandle,TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,&hdlTokenHandle);
 
-       LookupPrivilegeValue(NULL, "SeShutdownPrivilege", &tmpLuid);
+       LookupPrivilegeValue(NULL,"SeShutdownPrivilege",&tmpLuid);
 
        tkp.PrivilegeCount=1;
        tkp.Privileges[0].Luid=tmpLuid;
        tkp.Privileges[0].Attributes=SE_PRIVILEGE_ENABLED;
 
-       AdjustTokenPrivileges(hdlTokenHandle, FALSE, &tkp, sizeof(tkpNewButIgnored), &tkpNewButIgnored, &lBufferNeeded);
+       AdjustTokenPrivileges(hdlTokenHandle,FALSE,&tkp,sizeof(tkpNewButIgnored),&tkpNewButIgnored,&lBufferNeeded);
     }
 
 #pragma ENDDUMP
