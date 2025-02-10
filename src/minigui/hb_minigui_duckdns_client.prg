@@ -9,13 +9,14 @@
 #define REG_VAR "Software\Microsoft\Windows\CurrentVersion\Run"
 
 static lWinRun as logical:=.F.
-static aPublicVars as array:={"hb_minigui_duckdns_client.ini","example.duckdns.org","your-token-here","5","YES","NO"}
+static aPublicVars as array:={"hb_minigui_duckdns_client.ini","example.duckdns.org","your-token-here","5","YES","NO","ANSI"}
 #xtranslate cCfgFile => aPublicVars\[1\]
 #xtranslate cDomain=> aPublicVars\[2\]
 #xtranslate cToken => aPublicVars\[3\]
 #xtranslate cRefresh => aPublicVars\[4\]
 #xtranslate cUpdateMsg => aPublicVars\[5\]
 #xtranslate cWinRun=> aPublicVars\[6\]
+#xtranslate cSetDateFormat=> aPublicVars\[7\]
 
 procedure main(cStartUp as character)
 
@@ -23,8 +24,9 @@ procedure main(cStartUp as character)
 
     local lStartUP as logical
 
+    local hSetDateFormat /*as hash*/
+
     SET CENTURY ON
-    SET DATE BRITISH
     SET MULTIPLE OFF
 
     if (!File(cCfgFile))
@@ -34,6 +36,7 @@ procedure main(cStartUp as character)
             SET SECTION "Options" ENTRY "Refresh" TO cRefresh
             SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
             SET SECTION "Options" ENTRY "WinRun" TO cWinRun
+            SET SECTION "Options" ENTRY "SetDateFormat" TO cSetDateFormat
         END INI
     else
         BEGIN INI FILE cCfgFile
@@ -42,8 +45,26 @@ procedure main(cStartUp as character)
             GET cRefresh SECTION "Options" ENTRY "Refresh"
             GET cUpdateMsg SECTION "Options" ENTRY "UpdateMsg"
             GET cWinRun SECTION "Options" ENTRY "WinRun"
+            GET cSetDateFormat SECTION "Options" ENTRY "SetDateFormat"
         END INI
     endif
+
+    if (empty(cSetDateFormat))
+        cSetDateFormat:="ANSI"
+    endif
+
+    hSetDateFormat:={;
+         "AMERICAN" => "mm/dd/yyyy";
+        ,"ANSI"     => "yyyy.mm.dd";
+        ,"BRITISH"  => "dd/mm/yyyy";
+        ,"FRENCH"   => "dd/mm/yyyy";
+        ,"GERMAN"   => "dd.mm.yyyy";
+        ,"ITALIAN"  => "dd-mm-yyyy";
+        ,"JAPANESE" => "yyyy/mm/dd";
+        ,"USA"      => "mm-dd-yyyy";
+    }
+
+    SET DATE FORMAT TO hSetDateFormat[cSetDateFormat]
 
     lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
     if (!lStartUP)
@@ -60,7 +81,7 @@ procedure main(cStartUp as character)
         MAIN NOSHOW;
         NOTIFYICON 'MAIN';
         NOTIFYTOOLTIP __NotifyTooltip();
-        ON NOTIFYCLICK ShowOptions()
+        ON NOTIFYCLICK ShowOptions(hSetDateFormat)
 
         DEFINE NOTIFY MENU
             ITEM '&Update Now' ACTION UpdateDuckDNS()
@@ -85,13 +106,19 @@ procedure main(cStartUp as character)
 
     return
 
-static procedure ShowOptions()
+static procedure ShowOptions(hSetDateFormat)
 
     local aRefresh as array
     local aUpdateMsg as array
+    local aSetDateFormat as array
+
+    local cKey as character
+
+    local lSaveOptions as logical
 
     local nRefresh as numeric
     local nUpdateMsg as numeric
+    local nSetDateFormat as numeric
 
     begin sequence
 
@@ -102,8 +129,14 @@ static procedure ShowOptions()
         aRefresh:={"5","10","15","30","60"}
         aUpdateMsg:={"YES","NO"}
 
+        aSetDateFormat:=Array(0)
+        for each cKey in HGetKeys(hSetDateFormat)
+            aAdd(aSetDateFormat,cKey)
+        next each
+
         nRefresh:=Max(aScan(aRefresh,cRefresh),1)
         nUpdateMsg:=Max(aScan(aUpdateMsg,cUpdateMsg),1)
+        nSetDateFormat:=Max(aScan(aSetDateFormat,cSetDateFormat),1)
 
         DEFINE WINDOW Form_Options;
                AT 0,0;
@@ -133,6 +166,11 @@ static procedure ShowOptions()
             @ 110,20    LABEL lblUpdateMsg;
                         VALUE 'Show Notifications:';
                         WIDTH 100;
+                       HEIGHT 20
+
+            @ 140,20    LABEL lblDateFormat;
+                        VALUE 'Date format:';
+                        WIDTH 80;
                        HEIGHT 20
 
             @ 20,120    TEXTBOX txtDomain;
@@ -169,22 +207,32 @@ static procedure ShowOptions()
                            SIZE 10;
                       ON CHANGE (cUpdateMsg:=aUpdateMsg[Form_Options.cmbUpdateMsg.Value])
 
-            @ 135,120 CHECKBOX chkbWinRun;
+            @ 140,120   LISTBOX cmbSetDateFormat;
+                             OF Form_Options;
+                          WIDTH 100;
+                         HEIGHT 24;
+                          ITEMS aSetDateFormat;
+                          VALUE nSetDateFormat;
+                           FONT GetDefaultFontName();
+                           SIZE 10;
+                      ON CHANGE (cSetDateFormat:=aSetDateFormat[Form_Options.cmbSetDateFormat.Value])
+
+            @ 170,120 CHECKBOX chkbWinRun;
                        CAPTION '&Start ' + PROGRAM + ' automatically at Windows Startup' ;
                          WIDTH 312;
                         HEIGHT 16;
                          VALUE lWinRun;
                      ON CHANGE (lWinRun:=!lWinRun,cWinRun:=if(lWinRun,"YES","NO"),WinRun(lWinRun))
 
-            @ 150,120   BUTTON btnSave;
+            @ 190,120   BUTTON btnSave;
                        CAPTION '&Save';
-                        ACTION SaveOptions();
+                        ACTION (lSaveOptions:=.T.,SaveOptions(hSetDateFormat));
                          WIDTH 80;
                         HEIGHT 24
 
-            @ 150,210   BUTTON btnCancel;
+            @ 190,210   BUTTON btnCancel;
                        CAPTION '&Cancel';
-                        ACTION Form_Options.Release;
+                        ACTION (lSaveOptions:=.F.,Form_Options.Release);
                          WIDTH 80;
                         HEIGHT 24
         END WINDOW
@@ -192,13 +240,19 @@ static procedure ShowOptions()
         CENTER WINDOW Form_Options
         ACTIVATE WINDOW Form_Options
 
+        if (lSaveOptions)
+            UpdateDuckDNS()
+        endif
+
     end sequence
 
     return
 
-static procedure SaveOptions()
+static procedure SaveOptions(hSetDateFormat /*as hash*/)
 
     cWinRun:=if(lWinRun,"YES","NO")
+
+    SET DATE FORMAT TO hSetDateFormat[cSetDateFormat]
 
     BEGIN INI FILE cCfgFile
         SET SECTION "Options" ENTRY "Domain" TO cDomain
@@ -206,16 +260,9 @@ static procedure SaveOptions()
         SET SECTION "Options" ENTRY "Refresh" TO cRefresh
         SET SECTION "Options" ENTRY "UpdateMsg" TO cUpdateMsg
         SET SECTION "Options" ENTRY "WinRun" TO cWinRun
+        SET SECTION "Options" ENTRY "SetDateFormat" TO cSetDateFormat
     END INI
 
-    UpdateDuckDNS()
-
-    if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))
-        Form_Main.Timer_UpdateDuckDNS.Interval:=(val(cRefresh)*60000)
-        Form_Main.Timer_UpdateDuckDNS.Enabled:=.T.
-    endif
-
-    Form_Main.NotifyTooltip:=__NotifyTooltip()
     Form_Options.Release
 
     return
@@ -243,6 +290,13 @@ static procedure UpdateDuckDNS()
     else
         MsgInfo("Could not retrieve IP address!",PROGRAM)
     endif
+
+    if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))
+        Form_Main.Timer_UpdateDuckDNS.Interval:=(val(cRefresh)*60000)
+        Form_Main.Timer_UpdateDuckDNS.Enabled:=.T.
+    endif
+
+    Form_Main.NotifyTooltip:=__NotifyTooltip()
 
     return
 
