@@ -91,7 +91,7 @@ procedure main(cStartUp as character)
             SEPARATOR
             ITEM '&Options' ACTION ShowOptions()
             SEPARATOR
-            ITEM '&About...' ACTION ShellAbout("",PROGRAM+VERSION+CRLF+"Copyright "+Chr(169)+COPYRIGHT,LoadIconByName("MAIN",32,32))
+            ITEM '&About...' ACTION ShellAbout(PROGRAM,PROGRAM+VERSION+CRLF+"Copyright "+Chr(169)+COPYRIGHT,LoadIconByName("MAIN",32,32))
             SEPARATOR
             ITEM 'E&xit' ACTION Form_Main.Release
         END MENU

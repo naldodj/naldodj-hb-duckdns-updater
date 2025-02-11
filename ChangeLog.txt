@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-11 17:11 UTC naldodj
+  ! Fix ShellAbout Title.
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-11 17:04 UTC naldodj
   * src/minigui/hb_minigui_duckdns_client.exe
   * src/minigui/hb_minigui_duckdns_client.prg
