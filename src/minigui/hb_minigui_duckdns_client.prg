@@ -356,6 +356,7 @@ static function GetIP()
     local hResponse /*as hash*/
 
     local nURL as numeric
+    local nTry as numeric
 
     aAdd(aURLS,{"https://4.ident.me/",.F.})
     aAdd(aURLS,{"https://ipinfo.io/ip",.F.})
@@ -367,22 +368,33 @@ static function GetIP()
     aAdd(aURLS,{"https://ipwhois.app/json/",.T.,"ip"})
     aAdd(aURLS,{"https://ipv4.iplocation.net/",.T.,"ip"})
 
-    nURL:=hb_RandomInt(1,Len(aURLS))
-    cURL:=strTran(aURLS[nURL][1],"https","http")
+    while (.T.)
 
-    cResponse:=HTTPGet(cURL,@cError)
+        nURL:=hb_RandomInt(1,Len(aURLS))
+        cURL:=strTran(aURLS[nURL][1],"https","http")
 
-    if (!Empty(cResponse))
-        if (aURLS[nURL][2])
-            hb_JSONDecode(cResponse,@hResponse)
-            cKEY:=aURLS[nURL][3]
-            if (HHasKey(hResponse,cKEY))
-                cIP:=hResponse[cKEY]
+        cResponse:=HTTPGet(cURL,@cError)
+
+        if (!Empty(cResponse))
+            if (aURLS[nURL][2])
+                hb_JSONDecode(cResponse,@hResponse)
+                cKEY:=aURLS[nURL][3]
+                if (HHasKey(hResponse,cKEY))
+                    cIP:=hResponse[cKEY]
+                endif
+            else
+                cIP:=strTran(strTran(AllTrim(cResponse),chr(10),""),chr(13),"")
             endif
-        else
-            cIP:=strTran(strTran(AllTrim(cResponse),chr(10),""),chr(13),"")
         endif
-    endif
+
+        if (!Empty(cIP).or.(nTry>10))
+            exit
+        endif
+
+        nTry++
+        hb_idleSleep(.01)
+
+    end while
 
     return(cIP) as character
 
