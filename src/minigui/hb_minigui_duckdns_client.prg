@@ -18,13 +18,13 @@ static aPublicVars as array:={"hb_minigui_duckdns_client.ini","example.duckdns.o
 #xtranslate cWinRun=> aPublicVars\[6\]
 #xtranslate cSetDateFormat=> aPublicVars\[7\]
 
+static hSetDateFormat /*as hash*/
+
 procedure main(cStartUp as character)
 
     local cGetRegVar as character
 
     local lStartUP as logical
-
-    local hSetDateFormat /*as hash*/
 
     SET CENTURY ON
     SET MULTIPLE OFF
@@ -81,7 +81,7 @@ procedure main(cStartUp as character)
         MAIN NOSHOW;
         NOTIFYICON 'MAIN';
         NOTIFYTOOLTIP __NotifyTooltip();
-        ON NOTIFYCLICK ShowOptions(hSetDateFormat)
+        ON NOTIFYCLICK ShowOptions()
 
         DEFINE NOTIFY MENU
             ITEM '&Update Now' ACTION UpdateDuckDNS()
@@ -106,7 +106,7 @@ procedure main(cStartUp as character)
 
     return
 
-static procedure ShowOptions(hSetDateFormat)
+static procedure ShowOptions()
 
     local aRefresh as array
     local aUpdateMsg as array
@@ -226,7 +226,7 @@ static procedure ShowOptions(hSetDateFormat)
 
             @ 190,120   BUTTON btnSave;
                        CAPTION '&Save';
-                        ACTION (lSaveOptions:=.T.,SaveOptions(hSetDateFormat));
+                        ACTION (lSaveOptions:=.T.,SaveOptions());
                          WIDTH 80;
                         HEIGHT 24
 
@@ -291,7 +291,7 @@ static procedure ShowMyIP()
 
     return
 
-static procedure SaveOptions(hSetDateFormat /*as hash*/)
+static procedure SaveOptions()
 
     cWinRun:=if(lWinRun,"YES","NO")
 

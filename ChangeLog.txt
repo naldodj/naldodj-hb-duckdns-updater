@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-11 16:50 UTC naldodj
+  ! Fix: Argument error: HGETKEYS
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-11 14:53 UTC naldodj
   * src/minigui/hb_minigui_duckdns_client.exe
   * src/minigui/hb_minigui_duckdns_client.prg
