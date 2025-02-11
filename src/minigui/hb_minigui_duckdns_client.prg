@@ -86,7 +86,7 @@ procedure main(cStartUp as character)
         DEFINE NOTIFY MENU
             ITEM '&Update Now' ACTION UpdateDuckDNS()
             SEPARATOR
-            ITEM '&What is my IP Address' ACTION MsgInfo(GetIP(),PROGRAM)
+            ITEM '&What is my IP Address' ACTION ShowMyIP()
             ITEM '&Copy my IP Address to Clipboard' ACTION (CopyToClipboard(""),CopyToClipboard(GetIP()))
             SEPARATOR
             ITEM '&Options' ACTION ShowOptions()
@@ -243,6 +243,49 @@ static procedure ShowOptions(hSetDateFormat)
         if (lSaveOptions)
             UpdateDuckDNS()
         endif
+
+    end sequence
+
+    return
+
+static procedure ShowMyIP()
+
+    begin sequence
+
+        if (!Empty(GetFormIndex("Form_ShowIP")))
+            break
+        endif
+
+        DEFINE WINDOW Form_ShowIP;
+               AT 0,0;
+            WIDTH 250;
+           HEIGHT 095;
+            TITLE PROGRAM+' :: My IP Address';
+             ICON 'MAIN';
+        NOMINIMIZE NOMAXIMIZE NOSIZE;
+             FONT 'MS Sans Serif';
+             SIZE 9
+
+        @ 20,20 LABEL lblShowMyIP;
+                VALUE "My IP Address is:";
+                WIDTH 85;
+               HEIGHT 20
+
+        DEFINE HYPERLINK hpl_ShowMyIP
+                ROW 20
+                COL 110
+              VALUE "http://"+GetIP()
+           AUTOSIZE .T.
+            ADDRESS "http://"+GetIP()
+         HANDCURSOR .T.
+        END HYPERLINK
+
+        ON KEY ESCAPE ACTION ThisWindow.Release
+
+        END WINDOW
+
+        CENTER WINDOW Form_ShowIP
+        ACTIVATE WINDOW Form_ShowIP
 
     end sequence
 
