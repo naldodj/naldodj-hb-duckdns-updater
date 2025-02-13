@@ -345,32 +345,56 @@ static procedure UpdateDuckDNS()
 
 static function GetIP()
 
+    local aURL as array
     local aURLS as array:=Array(0)
+    local aRegexMatch as array
 
     local cIP as character:=""
     local cURL as character
     local cKEY as character
+    local cRegex as character:="^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$"
     local cError as character
     local cResponse as character
 
     local hResponse /*as hash*/
 
+    local lRegexMatch as logical
+
     local nURL as numeric
-    local nTry as numeric
+    local nURLs as numeric
+    local nTry as numeric:=0
 
-    aAdd(aURLS,{"https://4.ident.me/",.F.})
-    aAdd(aURLS,{"https://ipinfo.io/ip",.F.})
-    aAdd(aURLS,{"https://api.ipify.org/",.F.})
-    aAdd(aURLS,{"https://4.icanhazip.com/",.F.})
-    aAdd(aURLS,{"https://checkip.amazonaws.com/",.F.})
-    aAdd(aURLS,{"https://ipv4.wtfismyip.com/text",.F.})
+    local pRegex /*as pointer*/
 
-    aAdd(aURLS,{"https://ipwhois.app/json/",.T.,"ip"})
-    aAdd(aURLS,{"https://ipv4.iplocation.net/",.T.,"ip"})
+    aAdd(aURLS,{"https://4.ident.me/",.F.,nil,.F.})
+    aAdd(aURLS,{"https://ipinfo.io/ip",.F.,nil,.F.})
+    aAdd(aURLS,{"https://api.ipify.org/",.F.,nil,.F.})
+    aAdd(aURLS,{"https://4.icanhazip.com/",.F.,nil,.F.})
+    aAdd(aURLS,{"https://checkip.amazonaws.com/",.F.,nil,.F.})
+    aAdd(aURLS,{"https://ipv4.wtfismyip.com/text",.F.,nil,.F.})
+
+    aAdd(aURLS,{"https://ipwhois.app/json/",.T.,"ip",.F.})
+    aAdd(aURLS,{"https://ipv4.iplocation.net/",.T.,"ip",.F.})
+
+    nURLs:=Len(aURLS)
+    nURL:=hb_RandomInt(1,nURLs)
+
+    pRegex:=HB_RegexComp(cRegex)
 
     while (.T.)
 
-        nURL:=hb_RandomInt(1,Len(aURLS))
+        if (aURLS[nURL][4])
+            for nURL:=1 to nURLs
+                if (aURLS[nURL][4])
+                    loop
+                endif
+            next nURL
+            if (nURL>nURLs)
+                exit
+            endif
+        endif
+
+        aURLS[nURL][4]:=.T.
         cURL:=strTran(aURLS[nURL][1],"https","http")
 
         cResponse:=HTTPGet(cURL,@cError)
@@ -387,7 +411,12 @@ static function GetIP()
             endif
         endif
 
-        if (!Empty(cIP).or.(nTry>10))
+        aRegexMatch:=hb_Regex(pRegex,cIP)
+        if (lRegexMatch:=((ValType(aRegexMatch)=="A")).and.(Len(aRegexMatch)>=5))
+            lRegexMatch:=(cIP==(aRegexMatch[2]+"."+aRegexMatch[3]+"."+aRegexMatch[4]+"."+aRegexMatch[5]))
+        endif
+
+        if ((lRegexMatch).or.(nTry>=nURLs))
             exit
         endif
 
