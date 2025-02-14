@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-14 16:20 UTC naldodj
+  ! Fix Startup Folder.
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-13 08:29 UTC naldodj
   * src/minigui/hb_minigui_duckdns_client.exe
   * src/minigui/hb_minigui_duckdns_client.prg

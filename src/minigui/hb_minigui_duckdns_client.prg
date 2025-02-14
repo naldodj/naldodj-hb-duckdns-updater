@@ -22,12 +22,23 @@ static hSetDateFormat /*as hash*/
 
 procedure main(cStartUp as character)
 
+    local cCurDir as character
+    local cExeFileName as character
     local cGetRegVar as character
 
     local lStartUP as logical
+    local lChangeDir as logical
 
     SET CENTURY ON
     SET MULTIPLE OFF
+
+    cExeFileName:=GetExeFileName()
+    cCurDir:=StrTran(cExeFileName,cFileNoPath(cExeFileName),"")
+    lChangeDir:=(Upper(CurDir())!=Upper(cCurDir))
+
+    if (lChangeDir)
+        DirChange(cCurDir)
+    endif
 
     if (!File(cCfgFile))
         BEGIN INI FILE cCfgFile
@@ -67,6 +78,7 @@ procedure main(cStartUp as character)
     SET DATE FORMAT TO hSetDateFormat[cSetDateFormat]
 
     lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
+
     if (!lStartUP)
         cGetRegVar:=getRegVar(nil,REG_VAR,PROGRAM)
         lStartUP:=(!Empty(cGetRegVar))
