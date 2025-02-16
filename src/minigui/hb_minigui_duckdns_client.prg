@@ -112,7 +112,7 @@ procedure main(cStartUp as character)
             SEPARATOR
             ITEM '&About...' ACTION ShellAbout(PROGRAM,PROGRAM+VERSION+CRLF+"Copyright "+Chr(169)+COPYRIGHT,LoadIconByName("MAIN",32,32))
             SEPARATOR
-            ITEM 'Restart the program' ACTION __Restart()
+            ITEM 'Restart '+PROGRAM ACTION __Restart()
             SEPARATOR
             ITEM 'E&xit' ACTION Form_Main.Release
         END MENU
@@ -557,7 +557,7 @@ static procedure __Restart()
 
     local cExeFileName as character:=GetExeFileName()
 
-    MsgBalloon("DuckDNS Restart the program...",PROGRAM)
+    MsgBalloon("DuckDNS Restart...",PROGRAM)
     hb_idleSleep(.05)
 
     ShellExecuteEx(NIL,"open",cExeFileName,"RESTART",NIL,SW_SHOWNORMAL)
