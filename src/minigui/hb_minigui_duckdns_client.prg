@@ -27,7 +27,16 @@ procedure main(cStartUp as character)
     local cGetRegVar as character
 
     local lStartUP as logical
+    local lRestart as logical
     local lChangeDir as logical
+
+    lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
+    if (!lStartUP)
+        lRestart:=(!Empty(cStartUp).and.(Upper(cStartUp)=="RESTART"))
+        if (lRestart)
+            hb_idleSleep(.05)
+        endif
+    endif
 
     SET CENTURY ON
     SET MULTIPLE OFF
@@ -77,8 +86,6 @@ procedure main(cStartUp as character)
 
     SET DATE FORMAT TO hSetDateFormat[cSetDateFormat]
 
-    lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
-
     if (!lStartUP)
         cGetRegVar:=getRegVar(nil,REG_VAR,PROGRAM)
         lStartUP:=(!Empty(cGetRegVar))
@@ -104,6 +111,8 @@ procedure main(cStartUp as character)
             ITEM '&Options' ACTION ShowOptions()
             SEPARATOR
             ITEM '&About...' ACTION ShellAbout(PROGRAM,PROGRAM+VERSION+CRLF+"Copyright "+Chr(169)+COPYRIGHT,LoadIconByName("MAIN",32,32))
+            SEPARATOR
+            ITEM 'Restart the program' ACTION __Restart()
             SEPARATOR
             ITEM 'E&xit' ACTION Form_Main.Release
         END MENU
@@ -472,9 +481,8 @@ static function __NextUpdate()
 
     nSeconds+=(val(cRefresh)*60)
     cTime:=SecToTime(nSeconds)
-    if (cTime>"23:59:59")
+    if (cTime<Time())
         dDate++
-        cTime:=ElapTime("24:00:00",cTime)
     endif
 
     cNextUpdate:=DToC(dDate)
@@ -543,7 +551,20 @@ static function DelRegVar(nKey as numeric,cRegKey as character,cSubKey as charac
     return(nValue) as numeric
 
 static function __NotifyTooltip()
-return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
+    return((PROGRAM+" - "+VERSION+hb_osNewLine()+"IP: "+GetIP()+hb_osNewLine()+"Next Update: "+__NextUpdate()+hb_osNewLine()+"Refresh: "+cRefresh+" minutes.")) as character
+
+static procedure __Restart()
+
+    local cExeFileName as character:=GetExeFileName()
+
+    MsgBalloon("DuckDNS Restart the program...",PROGRAM)
+    hb_idleSleep(.05)
+
+    ShellExecuteEx(NIL,"open",cExeFileName,"RESTART",NIL,SW_SHOWNORMAL)
+
+    ReleaseAllWindows()
+
+    return
 
 // Notify Icon Infotip flags
 #define NIIF_NONE       0x00000000
@@ -584,6 +605,7 @@ static procedure ActivateNotifyMenu(i as numeric)
     #define _WIN32_IE      0x0500
     #define _WIN32_WINNT   0x0400
 
+    #include <shlobj.h>
     #include <windows.h>
     #include "hbapi.h"
 
@@ -638,6 +660,27 @@ static procedure ActivateNotifyMenu(i as numeric)
        tkp.Privileges[0].Attributes=SE_PRIVILEGE_ENABLED;
 
        AdjustTokenPrivileges(hdlTokenHandle,FALSE,&tkp,sizeof(tkpNewButIgnored),&tkpNewButIgnored,&lBufferNeeded);
+    }
+
+    HB_FUNC_STATIC( SHELLEXECUTEEX )
+    {
+      SHELLEXECUTEINFO SHExecInfo;
+
+      ZeroMemory( &SHExecInfo, sizeof( SHExecInfo ) );
+
+      SHExecInfo.cbSize = sizeof( SHExecInfo );
+      SHExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+      SHExecInfo.hwnd  = HB_ISNIL( 1 ) ? GetActiveWindow() : ( HWND ) hb_parnl( 1 );
+      SHExecInfo.lpVerb = ( LPCSTR ) hb_parc( 2 );
+      SHExecInfo.lpFile = ( LPCSTR ) hb_parc( 3 );
+      SHExecInfo.lpParameters = ( LPCSTR ) hb_parc( 4 );
+      SHExecInfo.lpDirectory = ( LPCSTR ) hb_parc( 5 );
+      SHExecInfo.nShow = hb_parni( 6 );
+
+      if( ShellExecuteEx( &SHExecInfo ) )
+        hb_retnl( ( LONG ) SHExecInfo.hProcess );
+      else
+        hb_retnl( NULL );
     }
 
 #pragma ENDDUMP
