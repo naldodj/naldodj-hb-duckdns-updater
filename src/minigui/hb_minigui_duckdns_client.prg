@@ -29,6 +29,7 @@ procedure main(cStartUp as character)
     local lStartUP as logical
     local lRestart as logical
     local lChangeDir as logical
+    local lHasCfgFile as logical
 
     lStartUP:=(!Empty(cStartUp).and.(Upper(Substr(cStartUp,2))=="STARTUP"))
     if (!lStartUP)
@@ -49,7 +50,10 @@ procedure main(cStartUp as character)
         DirChange(cCurDir)
     endif
 
-    if (!File(cCfgFile))
+
+    lHasCfgFile:=File(cCfgFile)
+
+    if (!lHasCfgFile)
         BEGIN INI FILE cCfgFile
             SET SECTION "Options" ENTRY "Domain" TO cDomain
             SET SECTION "Options" ENTRY "Token" TO cToken
@@ -122,6 +126,10 @@ procedure main(cStartUp as character)
           ACTION (UpdateDuckDNS(),Form_Main.NotifyTooltip:=__NotifyTooltip())
 
     END WINDOW
+
+    if ((lWinRun).and.(lHasCfgFile))
+        UpdateDuckDNS()
+    endif
 
     ACTIVATE WINDOW Form_Main
 
