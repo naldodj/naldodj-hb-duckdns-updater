@@ -3,6 +3,11 @@
    Entries may not always be in chronological/commit order.
    See license at the end of file. */
 
+2025-02-27 08:34 UTC naldodj
+  ! Fix SHELLEXECUTEEX ptr return
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+
 2025-02-19 19:51 UTC naldodj
   * src/minigui/hb_minigui_duckdns_client.exe
   * src/minigui/hb_minigui_duckdns_client.prg

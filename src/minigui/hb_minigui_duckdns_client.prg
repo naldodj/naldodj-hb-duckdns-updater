@@ -670,25 +670,25 @@ static procedure ActivateNotifyMenu(i as numeric)
        AdjustTokenPrivileges(hdlTokenHandle,FALSE,&tkp,sizeof(tkpNewButIgnored),&tkpNewButIgnored,&lBufferNeeded);
     }
 
-    HB_FUNC_STATIC( SHELLEXECUTEEX )
+    HB_FUNC_STATIC(SHELLEXECUTEEX)
     {
-      SHELLEXECUTEINFO SHExecInfo;
+        SHELLEXECUTEINFO SHExecInfo;
 
-      ZeroMemory( &SHExecInfo, sizeof( SHExecInfo ) );
+        ZeroMemory(&SHExecInfo,sizeof(SHExecInfo));
 
-      SHExecInfo.cbSize = sizeof( SHExecInfo );
-      SHExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-      SHExecInfo.hwnd  = HB_ISNIL( 1 ) ? GetActiveWindow() : ( HWND ) hb_parnl( 1 );
-      SHExecInfo.lpVerb = ( LPCSTR ) hb_parc( 2 );
-      SHExecInfo.lpFile = ( LPCSTR ) hb_parc( 3 );
-      SHExecInfo.lpParameters = ( LPCSTR ) hb_parc( 4 );
-      SHExecInfo.lpDirectory = ( LPCSTR ) hb_parc( 5 );
-      SHExecInfo.nShow = hb_parni( 6 );
+        SHExecInfo.cbSize = sizeof(SHExecInfo);
+        SHExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+        SHExecInfo.hwnd  = HB_ISNIL(1) ? GetActiveWindow() : (HWND) hb_parnl(1);
+        SHExecInfo.lpVerb = (LPCSTR) hb_parc(2);
+        SHExecInfo.lpFile = (LPCSTR) hb_parc(3);
+        SHExecInfo.lpParameters = (LPCSTR) hb_parc(4);
+        SHExecInfo.lpDirectory = (LPCSTR) hb_parc(5);
+        SHExecInfo.nShow = hb_parni(6);
 
-      if( ShellExecuteEx( &SHExecInfo ) )
-        hb_retnl( ( LONG ) SHExecInfo.hProcess );
-      else
-        hb_retnl( NULL );
+        if(ShellExecuteEx(&SHExecInfo))
+            hb_retptr(SHExecInfo.hProcess);  // Retorna um ponteiro corretamente
+        else
+            hb_retptr(NULL);                 // Retorna NULL se falhar
     }
 
 #pragma ENDDUMP
