@@ -476,6 +476,7 @@ STATIC FUNCTION CheckFile( cName, /* @ */ aErr, lApplyFixes, cLocalRoot, lRebase
 
    /* FIXME: Harbour repo specific */
    LOCAL aCanBeUpper := { ;
+      ".github/FUNDING.yml",;
       "Makefile", ;
       "ChangeLog.*", ;
       "CONTRIBUTING.*", ;

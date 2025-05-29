@@ -617,6 +617,8 @@ static procedure ActivateNotifyMenu(i as numeric)
     #include <windows.h>
     #include "hbapi.h"
 
+    #pragma warning(disable:4312)
+
     static void ShowNotifyInfo(HWND hWnd,BOOL bAdd,HICON hIcon,LPSTR szText,LPSTR szInfo,LPSTR szInfoTitle,DWORD nIconIndex);
 
     HB_FUNC_STATIC( SHOWNOTIFYINFO )
