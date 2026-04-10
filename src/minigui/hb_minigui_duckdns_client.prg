@@ -357,10 +357,10 @@ static procedure UpdateDuckDNS()
             if (!Empty(cError))
                 cMsg+=" Error: "+cError
             endif
-            MsgInfo(cMsg,PROGRAM)
+            MsgBalloon(cMsg,PROGRAM)
         endif
     else
-        MsgInfo("Could not retrieve IP address!",PROGRAM)
+        MsgBalloon("Could not retrieve IP address!",PROGRAM)
     endif
 
     if (IsControlDefined(Timer_UpdateDuckDNS,Form_Main))

@@ -1,7 +1,23 @@
 /* Encoding: UTF-8 (No BOM)  Notation (in 5th column):
      * Change  ! Fix  % Optimize  + Add  - Remove  ; Comment
    Entries may not always be in chronological/commit order.
-   See license at the end of file. */
+   See license at the end of file.
+  (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm")+" UTC naldodj (Normalize line endings and rebuild Minigui client)"
+*/
+
+2026-04-10 19:07 UTC naldodj (Normalize line endings and rebuild Minigui client)
+  Normalize line endings and rebuild Minigui client
+    Normalize line endings/whitespace across docs and scripts (README.md, bin/*.hb, src/minigui/README.md, etc.) and update Minigui build artifacts.
+    Rebuilt/updated the Harbour Minigui client files (hb_minigui_duckdns_client.exe, .prg, .rc) and refreshed related project/config files.
+    * bin/3rdpatch.hb
+    * bin/check.hb
+    * bin/findnoasciicharacters.ps1
+    * bin/harbour.ucf
+    * README.md
+    * src/minigui/hb_minigui_duckdns_client.exe
+    * src/minigui/hb_minigui_duckdns_client.prg
+    * src/minigui/hb_minigui_duckdns_client.rc
+    * src/minigui/README.md
 
 2025-05-29 11:41 UTC naldodj
   + .gitattributes
